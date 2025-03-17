@@ -1,5 +1,5 @@
 import Node from '../userNode';
-import DBHandler from '../dbHandler';
+import UserDBHandler from '../userDbHandler';
 import { MerkleTree } from 'merkletreejs';
 import SHA256 from 'crypto-js/sha256';
 
@@ -7,10 +7,10 @@ jest.mock('../dbHandler');
 
 describe('Node', () => {
     let node: Node;
-    let mockDBHandler: jest.Mocked<DBHandler>;
+    let mockDBHandler: jest.Mocked<UserDBHandler>;
 
     beforeEach(() => {
-        mockDBHandler = new DBHandler() as jest.Mocked<DBHandler>;
+        mockDBHandler = new UserDBHandler(8001) as jest.Mocked<UserDBHandler>;
         node = new Node(8001);
         node.dbHandler = mockDBHandler;
     });

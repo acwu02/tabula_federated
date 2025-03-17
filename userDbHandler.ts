@@ -1,13 +1,14 @@
 import sqlite, { Database } from 'sqlite3';
 import { MerkleTree } from 'merkletreejs';
 import SHA256 from 'crypto-js/sha256';
+import bcrypt from 'bcrypt';
 
-interface DBHandler {
+interface UserDBHandler {
     db: Database;
     port: number;
 }
 
-class DBHandler {
+class UserDBHandler {
     constructor(port: number) {
         this.port = port;
         this.db = this.initDB();
@@ -44,17 +45,47 @@ class DBHandler {
                 console.error(err.message);
             }
         });
-
         console.log(`Created merkle_tree table for node running on port ${this.port}`);
 
+        this.db.run('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT UNIQUE, password TEXT)', (err) => {
+            if (err) {
+                console.error(err.message);
+            }
+        });
+        console.log(`Created users table for node running on port ${this.port}`);
     }
+
+    registerUser(username: string, password: string): void {
+        const hashedPassword = bcrypt.hashSync(password, 10);
+        const sql = 'INSERT INTO users (username, password) VALUES (?, ?)';
+        this.db.run(sql, [username, hashedPassword], function (err) {
+            if (err) {
+                console.error(err.message);
+            } else {
+                console.log(`User registered with ID: ${this.lastID} for node running on port ${this.port}`);
+            }
+        }.bind(this));
+    }
+
+    getPosts(): Promise<{ id: number, title: string, body: string }[]> {
+            return new Promise<{ id: number, title: string, body: string }[]>((resolve, reject) => {
+                const sql = 'SELECT id, title, body FROM posts';
+                this.db.all(sql, [], (err, rows: { id: number, title: string, body: string }[]) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(rows);
+                    }
+                });
+            });
+        }
 
     initMerkleTree(): void {
 
         const tree = new MerkleTree([], SHA256);
         const root = tree.getRoot().toString('hex');
         const leaves = tree.getLeaves();
-        const sql = 'INSERT INTO merkle_tree (leaves) VALUES (?) (root) VALUES (?)';
+        const sql = 'INSERT INTO merkle_tree (leaves, root) VALUES (?, ?)';
         this.db.run(sql, [leaves, root], function (err) {
             if (err) {
                 console.error(err.message);
@@ -99,4 +130,4 @@ class DBHandler {
     }
 }
 
-export default DBHandler;
+export default UserDBHandler;

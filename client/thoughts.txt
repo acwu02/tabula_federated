@@ -1,0 +1,21 @@
+App architecture:
+
+    - User input submitted; apiRequest points to server address
+    - Input passed to server-side controller. Controller routes API requests to respective routes
+    - Model functions called to route API requests to MySQL DB routes.
+    - Routes retrieve data
+
+Not sure what modules to expose user to.
+If exposed to too many modules,
+a single change in the user schema will result in significant downstream changes in functionality
+
+I could make an API request from DraggableComponent - ie. I wouldn't have to directly interface with user.
+But this is weird, because Content is supposed to be a wrapper for API requests.
+Plus, because userId is not exposed to DraggableComponent,
+it would necessitate initializing a UserContent instance in the controller with null userId.
+
+However, it might be worth setting up user props for content components regardless,
+because I might want to keep track of which users own which components in the future.
+
+I will probably just end up implementing deletion on the individual components' side -
+otherwise, I might just be intruding on the functionality of DraggableComponent/ResizableComponent.

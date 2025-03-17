@@ -18,7 +18,7 @@ endNodePort=${END_NODE_PORT:-8005}
 # Create user nodes
 for ((port=startNodePort; port<=endNodePort; port++)); do
     echo "Creating user node on port $port..."
-    curl "http://localhost:$bootstrapPort/create_node"
+    curl "http://localhost:$bootstrapPort/users/register" -X POST -d "port=$port" -s > /dev/null
     if [ $? -ne 0 ]; then
         echo "Failed to create user node on port $port."
         exit 1

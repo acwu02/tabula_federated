@@ -6,7 +6,10 @@ import Node from './userNode.js';
 
 const app = express();
 
-const ports = new Map();
+app.use(express.json());
+
+const ports = new Map<number, boolean>();
+const users = new Map<string, Node>(); // TODO replace w/ DB
 
 const startPort: number = parseInt(process.env.START_NODE_PORT || '8001', 10);
 const endPort: number = parseInt(process.env.END_NODE_PORT || '8005', 10);
@@ -39,22 +42,36 @@ app.get('/relay', async (req, res) => {
   try {
     const response = await axios.get(`http://localhost:${relayPort}/`);
     res.send(response.data);
-  } catch(e) {
+  } catch (e) {
     console.error(e);
   }
 });
 
-app.get('/create_node', (req, res) => {
+app.post('/users/register', async (req, res) => {
+  const { handle, publicKey, hash } = req.body;
+  console.log(`Registering user with handle ${handle}`);
+  console.log(`Hash: ${hash}`);
+  if (!handle || !publicKey) {
+    res.status(400).send('missingHandleOrPublicKey');
+    return;
+  }
+  if (users.has(handle)) {
+    res.status(409).send('incorrectPassword');
+    return;
+  }
   for (let [port, available] of ports) {
     if (!available) {
       ports.set(port, true);
-      let node = new Node(port);
+      let node = new Node(port, handle, hash, publicKey);
       node.create();
-      res.send(`New node running at ${port}`);
+      users.set(handle, node);
+      console.log(`User registered with handle ${handle} on port ${port}`);
+      const did = node.getDidDocument();
+      res.json({ "success": true, "did": did });
       return;
     }
   }
-  res.status(503).send('No available ports');
+  res.status(503).send('noAvailablePorts');
 });
 
 const PORT = process.env.PORT || 8000;

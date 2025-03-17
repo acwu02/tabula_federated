@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/tabula/static/css/main.58523a5d.css",
+    "main.js": "/tabula/static/js/main.676a10b7.js",
+    "index.html": "/tabula/index.html",
+    "main.58523a5d.css.map": "/tabula/static/css/main.58523a5d.css.map",
+    "main.676a10b7.js.map": "/tabula/static/js/main.676a10b7.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.58523a5d.css",
+    "static/js/main.676a10b7.js"
+  ]
+}
